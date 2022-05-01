@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+    <!-- Display the predictions -->
+    {% if label %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <h5>The app predicted digit as {{label}}</h5>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    </div>
+    {% endif %}
+    <div id="paint" align="center">
+        <canvas id="canvas" width="350" height="350" style="border: 4px solid #253863; "></canvas>
+    </div>
+    <script>
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        ctx.strokeStyle = 'white';
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        var painting = document.getElementById('paint');
+        var paint_style = getComputedStyle(painting);
+        var mouse = {x: 0, y: 0};
+        canvas.addEventListener('mousemove', function(e) {
+        mouse.x = e.pageX - this.offsetLeft;
+        mouse.y = e.pageY - this.offsetTop;
+        }, false);
+        ctx.lineWidth = 12;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        canvas.addEventListener('mousedown', function(e) {
+        ctx.beginPath();
+        ctx.moveTo(mouse.x, mouse.y);
+        canvas.addEventListener('mousemove', onPaint, false);
+        }, false);
+        canvas.addEventListener('mouseup', function() {
+        canvas.removeEventListener('mousemove', onPaint, false);
+        }, false);
+        var onPaint = function() {
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.stroke();
+        };
+    </script>
+
+    <div align="center">
+        <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.4.2.min.js" type="text/javascript"></script>
+        <form action="/imageData/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="width" value="">
+            <input type="hidden" name="height" value="">
+            <input type="hidden" name="image_data" value="">
+            <div class="inner"> <button class="btn btn-2 btn-info" onclick="submit_pixels(canvas)">Predict</button></div>
+        </form>
+
+    <script>
+        function submit_pixels(canvas) {
+            $('form input[name=image_data]').val(canvas.toDataURL("image/png"));
+            $('form input[name=width]').val(canvas.width);
+            $('form input[name=height]').val(canvas.height);
+            $('form').submit();
+        }
+    </script>
+    <div class="inner"><button class="btn btn-2 btn-warning" onclick="myFunction()" >Reset</button></div>
+    <script >
+        function myFunction(){
+        var canvas= document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // ctx.clearRect(0, 0,  canvas.width, canvas.height);
+        }
+        </script>
+    </div>
+{% endblock content %}
